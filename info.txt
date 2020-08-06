@@ -1,0 +1,2 @@
+- cd into react-native-app folder
+- npx react-native run-android (fires up Node.js and android emulator)
