@@ -8,6 +8,7 @@ import {
   FlatList,
   StyleSheet,
   TouchableOpacity,
+  TextInput,
 } from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
@@ -46,10 +47,12 @@ const deleteItem = async id => {
   }
 };
 
-function Item({title, id}) {
+function Item({name, desc, id}) {
   return (
     <View style={styles.item}>
-      <Text style={styles.title}>{title}</Text>
+      <Text style={styles.title}>
+        {name} - {desc}
+      </Text>
       <TouchableOpacity onPress={() => deleteItem(id)}>
         <FontAwesomeIcon icon={faTimesCircle} style={styles.icon} />
         {/* </Button> */}
@@ -60,9 +63,8 @@ function Item({title, id}) {
 
 const Items = navigation => {
   const [items, setItems] = useState([]);
-  useEffect(() => {
-    getItems();
-  }, [getItems, items]);
+  const [name, setName] = useState('');
+  const [desc, setDesc] = useState('');
 
   const getItems = async () => {
     try {
@@ -81,25 +83,29 @@ const Items = navigation => {
       console.log(err);
     }
   };
+  useEffect(() => {
+    getItems();
+  }, []);
+
+  const handleNameChange = event => {
+    setName(event.nativeEvent.text);
+  };
+  const handleDescChange = event => {
+    setDesc(event.nativeEvent.text);
+  };
 
   // create item
   const createItem = async () => {
-    console.log('createItem fired');
     const config = {
       headers: {
         'Content-Type': 'application/json',
       },
     };
-
-    const getRandomNumber = () => {
-      const num = Math.floor(Math.random() * 100 + 1);
-      return num;
-    };
     const body = {
-      name: 'item ' + getRandomNumber(),
-      desc: 'item desc',
+      name: name,
+      desc: desc,
     };
-
+    console.warn(body);
     try {
       await axios.post('http://10.0.2.2:5000/api/items', body, config);
     } catch (err) {
@@ -110,15 +116,27 @@ const Items = navigation => {
   return (
     <View>
       {console.log(items)}
+
       <Text>Items</Text>
-      <Button title="Add" onPress={createItem} />
+
       <FlatList
         data={items}
         keyExtractor={(item, index) => 'key' + index}
         renderItem={({item}) => {
-          return <Item title={item.name} id={item._id} />;
+          return <Item name={item.name} desc={item.desc} id={item._id} />;
         }}
       />
+      <TextInput
+        placeholder="item name"
+        type="text"
+        onChange={handleNameChange}
+      />
+      <TextInput
+        placeholder="item description"
+        type="text"
+        onChange={handleDescChange}
+      />
+      <Button title="Add Item" onPress={createItem} />
     </View>
   );
 };
